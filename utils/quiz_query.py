@@ -52,7 +52,7 @@ class QuizQuery:
 
         # 태그 필터
         org_tags = pd.read_pickle(
-            "/".join("../data/quizzes.pkl".split("/")[:-1] + ["quiz_tags.pkl"])
+            "/".join(self.src.split("/")[:-1] + ["quiz_tags.pkl"])
         ).values.tolist()[0]
         if (tags := set(tags)) & set(org_tags):
             # quizzes = quizzes[set(quizzes.tags) & tags]
@@ -66,6 +66,7 @@ class QuizQuery:
                 print("해당하는 문제를 모두 푸셨거나,", end=" ")
             print("해당하는 문제가 없습니다.")
         else:
+            print("필터 잘 됨")
             self.filtered_quizzes = quizzes
         return self.filtered_quizzes.sample(
             n=min(n, len(quizzes)), random_state=random_state

@@ -22,6 +22,7 @@ class DiscordEmbed:
 
     def quiz(self, quizzes):
         self.embed.set_thumbnail(url=f"https://fakeimg.pl/400x300/?text=You_can_do_it!")
+        print("문제")
         for idx, quiz in enumerate(quizzes, 1):
             quiz = quiz.split("\n")
             self.embed.add_field(
@@ -39,6 +40,7 @@ class DiscordEmbed:
                 value=quiz[2].replace("'", "`"),
                 inline=False,
             )
+            print(quiz[0], quiz[3])
         return self.embed
 
     def levels(self):
