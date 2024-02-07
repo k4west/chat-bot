@@ -10,6 +10,10 @@ class QuizQuery:
 
         self.src = src
         self.quizzes = pd.read_pickle(self.src).dropna(axis=0)
+        if self.quizzes.empty:
+            print("안 됨")
+        else:
+            print("잘 불러옴")
 
         # 한글, 영어, 숫자, 특수기호를 제외한 문자 탐색 > 다른 언어로 작성된 문제는 어려워서;;
         pattern = re.compile(
