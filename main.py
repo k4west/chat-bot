@@ -35,7 +35,7 @@ async def on_ready():
     quiz_ch = bot.get_channel(quiz_channel_id)
 
     await bot.change_presence(activity=discord.Game(name="문제를 제공해드립니다."))
-    await quiz_ch.send(embed=DiscordEmbed().greeting(datetime.now()))
+    await quiz_ch.send(embed=DiscordEmbed().greeting(kor_now()))
 
     sessac_ch = bot.get_channel(sessac_channel_id)  # 새싹X솔트룩스 LLM 잡담방
     while True:
