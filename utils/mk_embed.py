@@ -73,3 +73,18 @@ class DiscordEmbed:
             `이분 탐색`, `너비 우선 탐색`, `깊이 우선 탐색`, `최단 경로`, `데이크스트라`, `백트래킹`""",
         )
         return embed
+
+    def tags_list(self, src="../data/quiz_tags.pkl"):
+        import pandas as pd
+
+        tags = (
+            str(pd.read_pickle(src).values[0])
+            .replace('"mo\'s"', '`mo"s`')
+            .replace("'", "`")
+            .replace('mo"s', "mo's")
+        )
+        print(tags)
+        embed = discord.Embed(
+            title="태그!", description=tags, color=discord.Color.random()
+        )
+        return embed

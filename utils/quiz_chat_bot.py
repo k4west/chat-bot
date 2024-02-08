@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import pytz
 import asyncio
 import discord
 from discord.ext import commands
@@ -16,6 +17,16 @@ src = "../data/quizzes.pkl"
 quiz_channel_id = 1204354643715428362
 sessac_channel_id = 1196688402880401490
 
+# 한국 시간대로 변경합니다.
+korea_tz = pytz.timezone("Asia/Seoul")
+
+
+def kor_now():
+    # 현재 시간을 UTC로 가져옵니다.
+    now_utc = datetime.now(pytz.utc)
+    now_korea = now_utc.astimezone(korea_tz)
+    return now_korea
+
 
 @bot.event
 async def on_ready():
@@ -27,8 +38,8 @@ async def on_ready():
 
     sessac_ch = bot.get_channel(sessac_channel_id)  # 새싹X솔트룩스 LLM 잡담방
     while True:
-        if datetime.now().weekday() < 5:
-            if (cur_time := str(datetime.now().strftime("%H:%M"))) == "09:00":
+        if (cur_time := str(kor_now().strftime("%H:%M"))) == "09:00":
+            if kor_now().weekday() < 5:
                 await quiz_ch.send("오늘도 열심히 풀어봅시다!")
                 await sessac_ch.send(cur_time + "입니다.")
                 # select_quizzes params: s=최소 난이도, e=최대 난이도, n=문제 수, tags=문제 태그, level=특정 난이도
@@ -43,13 +54,12 @@ async def on_ready():
 
                 else:
                     await sessac_ch.send("해당하는 문제가 없습니다.")
-        else:
-            if (cur_time := str(datetime.now().strftime("%H:%M"))) == "09:00":
+            else:
                 await quiz_ch.send("주말인데, 쉬엄쉬엄 하세요~")
         await asyncio.sleep(60)
 
 
-@bot.command(name="문제", aliases=["quiz"])
+@bot.command(name="문제", aliases=[" 문제", "quiz", " quiz"])
 async def quiz(ctx):
     time = 15.0
 
@@ -92,9 +102,9 @@ async def quiz(ctx):
     )
     try:
         tags_m = await bot.wait_for("message", timeout=time, check=check_auth)
+        tags = tags_m.content.split(",")
     except:
         pass
-    tags = tags_m.content.split(",")
     await tag_list.delete()
     await req_tag.delete()
 
@@ -124,6 +134,13 @@ async def quiz(ctx):
     await level_m.delete()
     await tags_m.delete()
     await n_m.delete()
+
+
+@bot.command(name="태그", aliases=[" 태그", "tag", " tag", "tags", " tags"])
+async def quiz(ctx):
+    # Asking tags list
+    tags_list = DiscordEmbed().tags_list(src=src.replace("quizzes", "quiz_tags"))
+    await ctx.send(embed=tags_list)
 
 
 bot.run(TOKEN)
