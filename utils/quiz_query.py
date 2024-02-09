@@ -41,7 +41,7 @@ class QuizQuery:
         self.filtered_quizzes = self.quizzes
 
     def filter_quizzes(
-        self, s=0, e=30, n=2, tags: list = None, level=-1, random_state=None
+        self, s=0, e=30, n=2, tags: list = [], level=-1, random_state=None
     ):
 
         # 난이도 필터

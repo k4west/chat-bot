@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from quiz_query import QuizQuery
 from quiz_render import QuizRender
+from level_button import LevelButton
 from mk_embed import DiscordEmbed
 
 intents = discord.Intents.default()
@@ -15,7 +16,6 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 TOKEN = os.environ["DISCORD_TOKEN"]
 src = "../data/quizzes.pkl"
 quiz_channel_id = 1204354643715428362
-sessac_channel_id = 1196688402880401490
 
 # 한국 시간대로 변경합니다.
 korea_tz = pytz.timezone("Asia/Seoul")
@@ -36,86 +36,107 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="문제를 제공해드립니다."))
     await quiz_ch.send(embed=DiscordEmbed().greeting(kor_now()))
 
-    sessac_ch = bot.get_channel(sessac_channel_id)  # 새싹X솔트룩스 LLM 잡담방
     while True:
         if (cur_time := str(kor_now().strftime("%H:%M"))) == "09:00":
             if kor_now().weekday() < 5:
-                await quiz_ch.send("오늘도 열심히 풀어봅시다!")
-                await sessac_ch.send(cur_time + "입니다.")
+                await quiz_ch.send(cur_time + "입니다. 오늘도 열심히 풀어봅시다!")
                 # select_quizzes params: s=최소 난이도, e=최대 난이도, n=문제 수, tags=문제 태그, level=특정 난이도
                 quizzes = QuizQuery(src=src).filter_quizzes(
-                    s=1, e=7, n=2, tags=None, level=-1
+                    s=1, e=7, n=2, tags=[], level=-1
                 )
                 result = QuizRender()
                 quizzes = result.make_content(quizzes, new=True)
 
                 if quizzes:
-                    await sessac_ch.send(embed=DiscordEmbed().quiz(quizzes))
+                    await quiz_ch.send(embed=DiscordEmbed().quiz(quizzes))
 
                 else:
-                    await sessac_ch.send("해당하는 문제가 없습니다.")
+                    await quiz_ch.send("해당하는 문제가 없습니다.")
             else:
                 await quiz_ch.send("주말인데, 쉬엄쉬엄 하세요~")
         await asyncio.sleep(60)
 
 
-@bot.command(name="문제", aliases=[" 문제", "quiz", " quiz"])
+@bot.command(name="ㅇ문제", aliases=[" 문제", "quiz", " quiz"])
 async def quiz(ctx):
     time = 15.0
+    button_dict = {
+        "": "직접 입력",
+        "1~5": "Bronze",
+        "6~10": "Silver",
+        "11~15": "Gold",
+        "16~20": "Platinum",
+        "21~25": "Diamond",
+        "26~30": "Ruby",
+    }
 
     def check_auth(message):
         return message.author == ctx.author
 
     # Asking baekjoon id
-    baekjoon_id, s, e, n, tags, level = "", 3, 7, 2, None, -1
-    req_id = await ctx.send("백준 아이디를 입력해 주세요.")
+    baekjoon_id, s, e, n, tags, level = "", 3, 7, 2, [], -1
+    baekjoon_id_m, level_m, tags_m, n_m = "", "", "", ""
+    req_id = await ctx.send("백준 아이디를 입력해 주세요.", delete_after=time)
     try:
-        baekjoon_id = await bot.wait_for("message", timeout=time, check=check_auth)
+        baekjoon_id_m = await bot.wait_for("message", timeout=time, check=check_auth)
+        quiz_query = QuizQuery(
+            src=src, user_name=(baekjoon_id := baekjoon_id_m.content)
+        )
     except:
-        pass
-    quiz_query = QuizQuery(src=src, user_name=baekjoon_id.content)
-    await req_id.delete()
+        quiz_query = QuizQuery(src=src, user_name=baekjoon_id)
+        print(baekjoon_id, "beakjoon")
+
+    print(baekjoon_id)
 
     # Asking levels of quiz to solve
     levels_msg = DiscordEmbed().levels()
-    level_list = await ctx.send(embed=levels_msg)
-    req_level = await ctx.send("어떤 난이도의(0~30) 문제를 풀겠습니까? (ex): 3~7, 5)")
-    try:
-        level_m = await bot.wait_for("message", timeout=time, check=check_auth)
-        for sep in "~-,":
-            if sep in (level_ := level_m.content):
-                s, e = map(int, level_.split(sep))
-                break
-        else:
-            level = int(level_)
-    except:
-        pass
-    await level_list.delete()
-    await req_level.delete()
+    await ctx.send(embed=levels_msg, delete_after=20)
+    await ctx.send("버튼은 10초 안에 누르셔야 합니다~~", delete_after=time)
+    await ctx.send("selcet a level", view=(lbs := LevelButton()), delete_after=time)
+
+    await asyncio.sleep(10)
+    level_ = (await ctx.send(button_dict[lbs.level], delete_after=5)).content
+
+    if level_ == "":
+        req_level = await ctx.send(
+            "어떤 난이도의(0~30) 문제를 풀겠습니까? (ex): 3~7, 5)"
+        )
+        try:
+            level_m = await bot.wait_for("message", timeout=time, check=check_auth)
+            for sep in "~-,":
+                if sep in (level_ := level_m.content):
+                    s, e = map(int, level_.split(sep))
+                    break
+            else:
+                level = int(level_)
+        except:
+            pass
+        await req_level.delete()
+    else:
+        s, e = map(int, level_.split("~"))
+    print("s, e, level:", s, e, level)
 
     # Asking tags of quiz to solve
     tags_msg = DiscordEmbed().tags()
-    tag_list = await ctx.send(embed=tags_msg)
-    req_tag = await ctx.send(
+    await ctx.send(embed=tags_msg, delete_after=time)
+    await ctx.send(
         """어떤 태그의 문제를 풀겠습니까?
-        (ex): 수학, 다이나믹 프로그래밍, 자료 구조, 그래프 이론, 문자열, 정렬, 최단 경로 등등)"""
+        (ex): 수학, 다이나믹 프로그래밍, 자료 구조, 그래프 이론, 문자열, 정렬, 최단 경로 등등)""",
+        delete_after=time,
     )
     try:
         tags_m = await bot.wait_for("message", timeout=time, check=check_auth)
         tags = tags_m.content.split(",")
     except:
         pass
-    await tag_list.delete()
-    await req_tag.delete()
 
     # Asking the number of quiz to solve
-    req_n = await ctx.send("풀고 싶은 문제수(<=8)를 입력해 주세요.")
+    await ctx.send("풀고 싶은 문제수(<=8)를 입력해 주세요.", delete_after=time)
     try:
         n_m = await bot.wait_for("message", timeout=time, check=check_auth)
         n = int(n_m.content)
     except:
         pass
-    await req_n.delete()
 
     # filter quizzes
     quizzes = quiz_query.filter_quizzes(s=s, e=e, n=n, tags=tags, level=level)
@@ -128,12 +149,13 @@ async def quiz(ctx):
     if quizzes:
         await ctx.send(embed=DiscordEmbed().quiz(quizzes))
     else:
-        await ctx.send("해당하는 문제가 없습니다.")
+        await ctx.send("해당하는 문제가 없습니다.", delete_after=time * 10)
 
-    await baekjoon_id.delete()
-    await level_m.delete()
-    await tags_m.delete()
-    await n_m.delete()
+    for mm in (baekjoon_id_m, level_m, tags_m, n_m):
+        try:
+            await mm.delete()
+        except:
+            pass
 
 
 @bot.command(name="태그", aliases=[" 태그", "tag", " tag", "tags", " tags"])
