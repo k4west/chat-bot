@@ -81,7 +81,7 @@ async def quiz(ctx):
     # Asking baekjoon id
     baekjoon_id, s, e, n, tags, level = "", 3, 7, 2, [], -1
     baekjoon_id_m, level_m, tags_m, n_m = "", "", "", ""
-    req_id = await ctx.send("백준 아이디를 입력해 주세요.", delete_after=time)
+    await ctx.send("백준 아이디를 입력해 주세요.", delete_after=time / 2)
     try:
         baekjoon_id_m = await bot.wait_for("message", timeout=time, check=check_auth)
         quiz_query = QuizQuery(
@@ -104,8 +104,8 @@ async def quiz(ctx):
     level_ = (await ctx.send(button_dict[lbs.level], delete_after=5)).content
 
     if level_ == "":
-        req_level = await ctx.send(
-            "난이도(0~30)를 선택해주세요. (ex): 3~7, 5)", delete_after=time
+        await ctx.send(
+            "난이도(0~30)를 선택해주세요. (ex): 3~7, 5)", delete_after=time / 2
         )
         try:
             level_m = await bot.wait_for("message", timeout=time, check=check_auth)
@@ -124,7 +124,7 @@ async def quiz(ctx):
     await ctx.send(
         """풀고 싶은 태그를 입력하세요.
         (ex): 수학, 다이나믹 프로그래밍, 자료 구조, 그래프 이론, 문자열, 정렬, 최단 경로 등등)""",
-        delete_after=time,
+        delete_after=time / 2,
     )
     try:
         tags_m = await bot.wait_for("message", timeout=time, check=check_auth)
@@ -133,7 +133,7 @@ async def quiz(ctx):
         pass
 
     # Asking the number of quiz to solve
-    await ctx.send("풀고 싶은 문제수(<=8)를 입력해 주세요.", delete_after=time)
+    await ctx.send("풀고 싶은 문제수(<=8)를 입력해 주세요.", delete_after=time / 2)
     try:
         n_m = await bot.wait_for("message", timeout=time, check=check_auth)
         n = int(n_m.content)
