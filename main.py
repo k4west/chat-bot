@@ -78,9 +78,10 @@ async def quiz(ctx):
     def check_auth(message):
         return message.author == ctx.author
 
-    # Asking baekjoon id
     baekjoon_id, s, e, n, tags, level = "", 3, 7, 2, [], -1
     baekjoon_id_m, level_m, tags_m, n_m = "", "", "", ""
+
+    # Asking baekjoon id
     await ctx.send("백준 아이디를 입력해 주세요.", delete_after=time / 2)
     try:
         baekjoon_id_m = await bot.wait_for("message", timeout=time, check=check_auth)
@@ -158,6 +159,31 @@ async def quiz(ctx):
             await mm.delete()
         except:
             pass
+
+
+@bot.command(name="ㅁ문제", aliases=["qquiz", " ㅁ문제", " qquiz"])
+async def quiz(ctx, baekjoon_id="", s=2, e=7, n=2, tags=[], level=-1):
+    time = 15
+    quiz_query = QuizQuery(src=src, user_name=baekjoon_id)
+    print(
+        f"""
+            baekjoon_id: {baekjoon_id} 
+            s: {s} 
+            e: {e} 
+            n: {n} 
+            tags: {tags} 
+            level: {level}"""
+    )
+
+    # filter quizzes
+    quizzes = quiz_query.filter_quizzes(s=s, e=e, n=n, tags=tags, level=level)
+    result = QuizRender()
+    quizzes = result.make_content(quizzes, new=True)
+
+    if quizzes:
+        await ctx.send(embed=DiscordEmbed().quiz(quizzes))
+    else:
+        await ctx.send("해당하는 문제가 없습니다.", delete_after=time * 10)
 
 
 @bot.command(name="태그", aliases=[" 태그", "tag", " tag", "tags", " tags"])
