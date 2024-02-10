@@ -53,12 +53,15 @@ async def on_ready():
                 quizzes = result.make_content(quizzes, new=True)
 
                 if quizzes:
+                    await quiz_ch.send(embed=DiscordEmbed().quiz(quizzes))
                     await sessac_ch.send(embed=DiscordEmbed().quiz(quizzes))
 
                 else:
+                    await quiz_ch.send("해당하는 문제가 없습니다.")
                     await sessac_ch.send("해당하는 문제가 없습니다.")
             else:
                 await quiz_ch.send("주말인데, 쉬엄쉬엄 하세요~")
+                await sessac_ch.send("주말인데, 쉬엄쉬엄 하세요~")
         await asyncio.sleep(60)
 
 
