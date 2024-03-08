@@ -35,14 +35,10 @@
     <img src='https://github.com/k4west/chat-bot/assets/125423305/17780500-f2da-4401-b599-bee22219488a'/>
     <img src='https://github.com/k4west/chat-bot/assets/125423305/5d3cf327-1d41-4645-aaad-87cc1ab86e8d'/>
 </div>
+<br></br>
 
-
-**문제 요청**
-
-![image](https://github.com/k4west/chat-bot/assets/125423305/e54fa654-ac93-46fd-9414-def6f2134dee)
-
-
-**빠른 문제 요청**
-
-![image](https://github.com/k4west/chat-bot/assets/125423305/09f66fdb-9644-4733-94a6-a858703fd229)
-
+**문제 요청**                        /                        **빠른 문제 요청**
+<div className="text-center my-4 border border-black flex flex-wrap justify-center w-2/3 m-auto">
+    <img src='https://github.com/k4west/chat-bot/assets/125423305/e54fa654-ac93-46fd-9414-def6f2134dee' width="450"/>
+    <img src='https://github.com/k4west/chat-bot/assets/125423305/09f66fdb-9644-4733-94a6-a858703fd229' width="450"/>
+</div>
