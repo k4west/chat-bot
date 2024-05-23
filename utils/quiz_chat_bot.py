@@ -57,7 +57,7 @@ async def on_ready():
         await asyncio.sleep(60)
 
 
-@bot.command(name="ㅇ문제", aliases=[" 문제", "quiz", " quiz"])
+@bot.command(name="문제", aliases=[" 문제", "quiz", " quiz"])
 async def quiz(ctx):
     time = 15.0
     button_dict = {
